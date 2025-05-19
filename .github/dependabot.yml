@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"               # Location of package.json
+    schedule:
+      interval: "weekly"         # Check for updates every week
+    open-pull-requests-limit: 5  # Max 5 open PRs at a time
+    # Optionally, you can uncomment below to only update direct dependencies
+    # allow:
+    #   - dependency-type: "direct"
+    # Optionally enable security updates only
+    # security-updates-only: true
+
