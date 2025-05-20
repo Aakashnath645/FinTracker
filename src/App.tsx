@@ -7,6 +7,7 @@ import Navigation from './components/Navigation';
 import MobileNav from './components/MobileNav';
 
 // Pages
+import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import AddTransaction from './pages/AddTransaction';
@@ -62,9 +63,10 @@ function AppContent() {
   if (!user) {
     return (
       <Routes>
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
