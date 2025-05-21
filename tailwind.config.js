@@ -29,7 +29,25 @@ export default {
           800: '#301E52',
           900: '#1D122D',
         }
-      }
+      },
+      fontFamily: {
+        sans: ['Inter var', 'system-ui', 'sans-serif'],
+      },
+      animation: {
+        'gradient': 'gradient 8s linear infinite',
+      },
+      keyframes: {
+        gradient: {
+          '0%, 100%': {
+            'background-size': '200% 200%',
+            'background-position': 'left center'
+          },
+          '50%': {
+            'background-size': '200% 200%',
+            'background-position': 'right center'
+          },
+        },
+      },
     },
   },
   plugins: [],
