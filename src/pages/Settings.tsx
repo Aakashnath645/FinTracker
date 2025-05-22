@@ -410,7 +410,7 @@ const Settings: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <h2 className="text-lg font-medium mb-2">About</h2>
           <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-            Personal Finance Tracker v1.0.0
+            Personal Finance Tracker v1.0.1
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             This is a PWA that works offline and stores all your data locally on your device. Your financial data never leaves your device.
