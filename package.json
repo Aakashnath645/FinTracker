@@ -19,13 +19,13 @@
     "lucide-react": "^0.344.0",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
-    "react-dom": "^18.2.0",
+    "react-dom": "^19.1.0",
     "react-router-dom": "^6.22.1",
     "date-fns": "^4.1.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.55",
-    "@types/react-dom": "^18.2.19",
+    "@types/react-dom": "^19.1.5",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.21",
     "eslint": "^8.56.0",
