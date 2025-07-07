@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "chart.js": "^4.4.1",
+    "chart.js": "^4.5.0",
     "dexie": "^4.0.1",
     "dexie-react-hooks": "^1.1.7",
     "framer-motion": "^12.18.1",
