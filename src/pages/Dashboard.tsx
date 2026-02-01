@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
@@ -13,8 +13,6 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Dashboard: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [totalIncome, setTotalIncome] = useState(0);
-  const [totalExpense, setTotalExpense] = useState(0);
   
   // Get dates for filtering
   const startDate = startOfMonth(currentMonth).toISOString();
@@ -44,21 +42,31 @@ const Dashboard: React.FC = () => {
       .toArray(),
     []
   );
-  
-  // Calculate totals when transactions change
-  useEffect(() => {
-    if (transactions) {
-      const income = transactions
-        .filter(t => t.type === 'income')
-        .reduce((sum, t) => sum + t.amount, 0);
-      
-      const expense = transactions
-        .filter(t => t.type === 'expense')
-        .reduce((sum, t) => sum + t.amount, 0);
-      
-      setTotalIncome(income);
-      setTotalExpense(expense);
+
+  // Memoize categories for O(1) lookup
+  const categoryMap = useMemo(() => {
+    const map = new Map();
+    if (categories) {
+      categories.forEach(category => {
+        map.set(category.id, category);
+      });
     }
+    return map;
+  }, [categories]);
+
+  // Calculate totals
+  const { totalIncome, totalExpense } = useMemo(() => {
+    if (!transactions) return { totalIncome: 0, totalExpense: 0 };
+
+    const income = transactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const expense = transactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    return { totalIncome: income, totalExpense: expense };
   }, [transactions]);
   
   // Prepare chart data for expense categories
@@ -263,7 +271,7 @@ const Dashboard: React.FC = () => {
         <div className="space-y-3">
           {recentTransactions && categories && recentTransactions.length > 0 ? (
             recentTransactions.map(transaction => {
-              const category = categories.find(c => c.id === transaction.category);
+              const category = categoryMap.get(transaction.category);
               if (!category) return null;
               
               return (
