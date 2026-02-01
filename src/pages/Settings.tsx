@@ -129,9 +129,11 @@ const Settings: React.FC = () => {
   // Export all data
   const exportAllData = async () => {
     try {
-      const allTransactions = await db.transactions.toArray();
-      const allCategories = await db.categories.toArray();
-      const allBudgets = await db.budgets.toArray();
+      const [allTransactions, allCategories, allBudgets] = await Promise.all([
+        db.transactions.toArray(),
+        db.categories.toArray(),
+        db.budgets.toArray(),
+      ]);
       
       const exportData = {
         transactions: allTransactions,
