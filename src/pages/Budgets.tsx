@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, addBudget, deleteBudget } from '../db/db';
 import { Plus, X } from 'lucide-react';
@@ -31,49 +31,70 @@ const Budgets: React.FC = () => {
   );
   
   // Calculate how much spent for each budget
-  const calculateSpentAmount = (budgetId: number | undefined) => {
-    if (!budgetId || !transactions || !budgets) return 0;
-    
-    const budget = budgets.find(b => b.id === budgetId);
-    if (!budget) return 0;
-    
+  const spentAmounts = useMemo(() => {
+    if (!transactions || !budgets) return {};
+
     const now = new Date();
-    const startDate = new Date(budget.startDate);
     
-    let endDate;
-    if (budget.endDate) {
-      endDate = new Date(budget.endDate);
-    } else {
-      // If no end date, calculate based on period
-      endDate = new Date(startDate);
-      switch (budget.period) {
-        case 'daily':
-          endDate.setDate(endDate.getDate() + 1);
-          break;
-        case 'weekly':
-          endDate.setDate(endDate.getDate() + 7);
-          break;
-        case 'monthly':
-          endDate.setMonth(endDate.getMonth() + 1);
-          break;
-        case 'yearly':
-          endDate.setFullYear(endDate.getFullYear() + 1);
-          break;
+    // Pre-process transactions: group by category and parse date
+    const transactionsByCategory = new Map<number, Array<{amount: number, dateTs: number}>>();
+
+    for (const t of transactions) {
+      if (!transactionsByCategory.has(t.category)) {
+        transactionsByCategory.set(t.category, []);
       }
+      transactionsByCategory.get(t.category)!.push({
+        amount: t.amount,
+        dateTs: new Date(t.date).getTime()
+      });
+    }
+
+    const amounts: Record<number, number> = {};
+
+    for (const budget of budgets) {
+      if (!budget.id) continue;
+
+      const startDate = new Date(budget.startDate);
+      const startDateTs = startDate.getTime();
+
+      let endDate;
+      if (budget.endDate) {
+        endDate = new Date(budget.endDate);
+      } else {
+        // If no end date, calculate based on period
+        endDate = new Date(startDate);
+        switch (budget.period) {
+          case 'daily':
+            endDate.setDate(endDate.getDate() + 1);
+            break;
+          case 'weekly':
+            endDate.setDate(endDate.getDate() + 7);
+            break;
+          case 'monthly':
+            endDate.setMonth(endDate.getMonth() + 1);
+            break;
+          case 'yearly':
+            endDate.setFullYear(endDate.getFullYear() + 1);
+            break;
+        }
+      }
+
+      // If budget is in the past, use the end date
+      // If budget is current, use current date
+      const effectiveEndDate = now < endDate ? now : endDate;
+      const effectiveEndDateTs = effectiveEndDate.getTime();
+
+      const categoryTransactions = transactionsByCategory.get(budget.category) || [];
+
+      const sum = categoryTransactions
+        .filter(t => t.dateTs >= startDateTs && t.dateTs <= effectiveEndDateTs)
+        .reduce((s, t) => s + t.amount, 0);
+
+      amounts[budget.id] = sum;
     }
     
-    // If budget is in the past, use the end date
-    // If budget is current, use current date
-    const effectiveEndDate = now < endDate ? now : endDate;
-    
-    return transactions
-      .filter(t => 
-        t.category === budget.category && 
-        new Date(t.date) >= startDate && 
-        new Date(t.date) <= effectiveEndDate
-      )
-      .reduce((sum, t) => sum + t.amount, 0);
-  };
+    return amounts;
+  }, [budgets, transactions]);
   
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -281,7 +302,7 @@ const Budgets: React.FC = () => {
             const category = categories?.find(c => c.id === budget.category);
             if (!category) return null;
             
-            const spentAmount = calculateSpentAmount(budget.id);
+            const spentAmount = spentAmounts[budget.id!] || 0;
             
             return (
               <BudgetCard 
